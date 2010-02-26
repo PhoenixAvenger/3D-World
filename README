@@ -1,0 +1,18 @@
+What to build:
+-A simple game where you are in a maze-like building but with distinctive features. Your job is to escape before being eaten by the minotaur.
+-We will have rooms, textures, doors, windows, portals, and various 3D objects.
+
+How to build it:
+-We will use SDL for utilities.
+-We will use C++ for code.
+-We will use OpenGL for 3D and stereo.
+
+Tasks:
+-Content loading
+-Content creation
+-Coding
+--->Colission detection
+--->Culling/Level of Detail (Portals/Octrees/BSP)
+--->Stereo
+--->Game Aspect (Minotaur)
+-World planning
