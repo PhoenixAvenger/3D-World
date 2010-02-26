@@ -171,9 +171,17 @@ void exit_sdl()
 
 void main_loop()
 {
+	SDL_Event event;
 	while(1) //infinite game loop -handle input here
 	{
-
+		while(SDL_PollEvent( &event ) ) {
+			switch( event.type) {
+				case SDL_QUIT:
+					exit_sdl();
+					exit(0);
+					break;
+			}
+		}
 
 		repaint();
 
