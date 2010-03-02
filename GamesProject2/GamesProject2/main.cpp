@@ -6,8 +6,8 @@
 #include "SDL.h"
 #include "SDL_opengl.h"
 
-const int SCREEN_X = 1280;
-const int SCREEN_Y = 1024;
+const int SCREEN_X = 1680;
+const int SCREEN_Y = 1050;
 
 int g_screen = 0;			//The SDL screen variable - currently global.
 
@@ -33,10 +33,10 @@ void init_sdl()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 32);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
+	//SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
 
-
-	if (SDL_SetVideoMode(SCREEN_X, SCREEN_Y, 32, SDL_OPENGL) == 0)
+	if (SDL_SetVideoMode(SCREEN_X, SCREEN_Y, 32, SDL_FULLSCREEN | SDL_OPENGL) == 0)
 	{
 		std::cout << "Failure" << std::endl;
 		SDL_Quit();	
@@ -68,6 +68,8 @@ void init_sdl()
       
       /* We want z-buffer tests enabled*/
       glEnable(GL_DEPTH_TEST);
+	  
+	  glEnable(GL_STENCIL_TEST);
   
       /* Do draw back-facing polygons*/
      glDisable(GL_CULL_FACE);
@@ -123,7 +125,7 @@ void exit_sdl()
    }
    
    
-   static void repaint()
+   static void repaint(bool left)
    {
        int i;
    
@@ -141,17 +143,19 @@ void exit_sdl()
        };
       
        /* Clear the color plane and the z-buffer */
-       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     
    
        glLoadIdentity();
    
+	   if (left) glTranslatef(.1,0,0);
        /* Move the object 2 units away from the camera */
        glTranslatef(0.0f, 0.0f, -2.0f);
    
        /* Rotate the object */
        glRotatef(pitch, 1.0f, 0.0f, 0.0f);
        glRotatef(yaw, 0.0f, 1.0f, 0.0f);
-   
+
+	   
        /* Draw the triangles which make up the object */
        glBegin(GL_TRIANGLES);
    
@@ -165,25 +169,75 @@ void exit_sdl()
        yaw = yaw + 0.05;
    
        /* finally, swap the back and front buffers */
-       SDL_GL_SwapBuffers();
+      // SDL_GL_SwapBuffers();
 }
 
+void inputcheck()
+{
+    SDL_Event event;
 
+    while ( SDL_PollEvent(&event) ) {
+        switch (event.type) {
+            case SDL_MOUSEMOTION:
+                printf("Mouse moved by %d,%d to (%d,%d)\n", 
+                       event.motion.xrel, event.motion.yrel,
+                       event.motion.x, event.motion.y);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                printf("Mouse button %d pressed at (%d,%d)\n",
+                       event.button.button, event.button.x, event.button.y);
+                break;
+			case SDL_KEYDOWN:
+				exit(0);
+				break;
+            case SDL_QUIT:
+                exit(0);
+				break;
+        }
+    }
+}
 void main_loop()
 {
-	SDL_Event event;
+	
+	unsigned char* stencildata = new unsigned char[SCREEN_X*SCREEN_Y];
+	//nuke the stencil buffer
+	glClearStencil(0x0);
+
+	for(int y = 0; y < SCREEN_Y; y++)
+	{
+		for(int x = 0; x < SCREEN_X; x++)
+			stencildata[y*SCREEN_X + x] = y % 2; //1 for odd, 0 for even.
+	}
+	
+	
+	glDrawPixels(SCREEN_X, SCREEN_Y, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE,  stencildata);
+	
+	
 	while(1) //infinite game loop -handle input here
 	{
-		while(SDL_PollEvent( &event ) ) {
-			switch( event.type) {
-				case SDL_QUIT:
-					exit_sdl();
-					exit(0);
-					break;
-			}
-		}
+		//event poll.
+		inputcheck();
+		//render
 
-		repaint();
+
+
+
+		glDrawBuffer(GL_BACK);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glStencilFunc(GL_EQUAL, 0x1, 0x1); //if ref & mask == stencil & mask
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); //stencil buffer is read only.
+		repaint(false);
+		
+		//move camera
+
+		glStencilFunc(GL_EQUAL, 0x0, 0x1); //if ref & mask == stencil & mask
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); //stencil buffer is read only.
+		repaint(true);
+		
+		
+		SDL_GL_SwapBuffers();
+
 
 	};
 };

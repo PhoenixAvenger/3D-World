@@ -1,0 +1,55 @@
+
+Vector2D Class - Brandon
+Vector3D Class - Brandon
+
+Vertex Class - Tom N.
+Edge Class - 2 vertex
+Triangle Class - 3 vertex, normal.
+
+Face - arbitrary ver
+Half-Edge Class - Tom G/ Tom N.
+
+Camera Class - Tom G
+
+
+Model Class - To be done later....
+
+
+
+Model/world loading
+
+
+
+
+All objects will have:
+
+Vertices - 3d points, Normals per vertex, Texture coordinates
+Triangles
+Triangle List
+
+
+
+
+
+
+Engine -
+	Object
+		Model
+			LOD 1
+			LOD 2
+			Textures
+			3D Data - half edge structure?
+		Billboard
+			Textures
+			3D location
+	
+		Sprites
+			Textures
+			Behavior
+
+
+Particle effect
+Entity
+	"Think function"
+	nextThink = +30 frames from now.
+	Render
